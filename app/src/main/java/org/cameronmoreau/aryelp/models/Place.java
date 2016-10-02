@@ -1,8 +1,12 @@
 package org.cameronmoreau.aryelp.models;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Cameron on 10/1/16.
@@ -82,6 +86,12 @@ public class Place {
 
     public void setWebsite(String website) {
         this.website = website;
+    }
+
+    public Map<String, Object> getDetails() {
+        Gson gson = new Gson();
+        String json = gson.toJson(this);
+        return gson.fromJson(json, new TypeToken<Map<String, Object>>(){}.getType());
     }
 
     @Override

@@ -4,11 +4,17 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import org.cameronmoreau.aryelp.models.Place;
 import org.cameronmoreau.aryelp.models.PlaceResult;
 import org.cameronmoreau.aryelp.services.PlacesApi;
+
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,6 +30,9 @@ public class DetailActivity extends AppCompatActivity {
 
     Place place;
 
+    ImageView ivMain;
+    TextView tvDetails;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +40,9 @@ public class DetailActivity extends AppCompatActivity {
 
         String id = getIntent().getExtras().getString(ID, "");
         Log.d("TEST", "Got " + id);
+
+        ivMain = (ImageView) findViewById(R.id.iv_main);
+        tvDetails = (TextView) findViewById(R.id.tv_details);
 
         loadPlace(id);
     }
@@ -56,6 +68,21 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     void loadUI() {
-        Toast.makeText(this, place.toString(), Toast.LENGTH_SHORT).show();
+        getSupportActionBar().setTitle(place.getName());
+
+        if(place.getPhotos() != null) {
+            if(place.getPhotos().size() > 0) {
+                Picasso.with(this)
+                        .load(place.getPhotos().get(0).getUrl())
+                        .resize(1200, 590)
+                        .centerCrop()
+                        .into(ivMain);
+            }
+        }
+
+        for(Map.Entry<String, Object> item: place.getDetails().entrySet()) {
+            if(item.getKey().equals("photos")) continue;
+            tvDetails.append(item.getKey() + ": " + item.getValue() + "\n\n");
+        }
     }
 }
