@@ -2,6 +2,7 @@ package org.cameronmoreau.aryelp;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -27,7 +28,9 @@ import org.cameronmoreau.aryelp.models.PlacesResult;
 import org.cameronmoreau.aryelp.services.PlacesApi;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -45,6 +48,7 @@ public class ARActivity extends AppCompatActivity implements OnClickBeyondarObje
     World world;
 
     ArrayList<BeyondarObject> arItems;
+    HashMap<String, String> tempPlaces;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,13 @@ public class ARActivity extends AppCompatActivity implements OnClickBeyondarObje
         checkPermissions();
 
         arItems = new ArrayList<>();
+        tempPlaces = new HashMap<>();
+
+        // Add temp places
+        // Pls dont judge
+        tempPlaces.put("Starbucks - $$$", "ChIJXXBI75iDRoYRsfgNW3cJV7c");
+        tempPlaces.put("Panda Express - $$", "ChIJuw7CzqGDRoYRKKCUT9edOuM");
+        tempPlaces.put("Smoothie King - $$$", "ChIJuw7CzqGDRoYRKKCUT9edOuM");
 
         world = new World(this);
         world.setDefaultImage(R.mipmap.ic_food_light);
@@ -73,44 +84,33 @@ public class ARActivity extends AppCompatActivity implements OnClickBeyondarObje
         for(BeyondarObject item : arItems) {
             world.addBeyondarObject(item);
         }
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://maps.googleapis.com/maps/api/place/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        PlacesApi api = PlacesApi.retrofit.create(PlacesApi.class);
-        Call<PlacesResult> call = api.getNearbyPlaces();
-        call.enqueue(new Callback<PlacesResult>() {
-            @Override
-            public void onResponse(Call<PlacesResult> call, Response<PlacesResult> response) {
-                Log.d("TEST", "Worked!");
-
-                List<Place> places = response.body().getResults();
-                for(Place p : places) {
-                    Log.d("TEST", p.toString());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<PlacesResult> call, Throwable t) {
-                Log.e("TEST", "Failed!");
-                Log.e("TEST", t.getMessage());
-            }
-        });
     }
 
     void addFakeItems() {
+        ArrayList<String> keys = new ArrayList<>();
+        for(Map.Entry<String, String> map : tempPlaces.entrySet()) {
+            keys.add(map.getKey());
+        }
+
+        //ChIJXXBI75iDRoYRsfgNW3cJV7c
         GeoObject go1 = new GeoObject(1);
         go1.setGeoPosition(30.612548, -96.340620);
-        go1.setName("Starbucks");
+        go1.setName(keys.get(0));
 
+
+        //e542f13ff1e3823d30aa59719daf04dbca72a2c1
         GeoObject go2 = new GeoObject(2);
         go2.setGeoPosition(30.612524, -96.340826);
-        go2.setName("Canes");
+        go2.setName(keys.get(0));
+
+        //82bc7d2965348632ec5dbec7298fa2f77b267199
+        GeoObject go3 = new GeoObject(3);
+        go3.setGeoPosition(30.612833, -96.341262);
+        go3.setName(keys.get(0));
 
         arItems.add(go1);
         arItems.add(go2);
+        arItems.add(go3);
     }
 
     void checkPermissions() {
@@ -149,7 +149,14 @@ public class ARActivity extends AppCompatActivity implements OnClickBeyondarObje
 
     @Override
     public void onClickBeyondarObject(ArrayList<BeyondarObject> arrayList) {
-        Toast.makeText(this, "Clicked on " + arrayList.get(0).getName(), Toast.LENGTH_SHORT).show();
+        String name = arrayList.get(0).getName();
+        String id = tempPlaces.get(name);
+
+        Toast.makeText(this, "Clicked on " + name, Toast.LENGTH_SHORT).show();
+
+        Intent i = new Intent(this, DetailActivity.class);
+        i.putExtra(DetailActivity.ID, id);
+        startActivity(i);
     }
 
     private class ARItemViewAdapter extends BeyondarViewAdapter {
