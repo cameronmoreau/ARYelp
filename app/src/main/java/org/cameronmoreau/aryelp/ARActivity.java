@@ -22,7 +22,18 @@ import com.beyondar.android.world.BeyondarObject;
 import com.beyondar.android.world.GeoObject;
 import com.beyondar.android.world.World;
 
+import org.cameronmoreau.aryelp.models.Place;
+import org.cameronmoreau.aryelp.models.PlacesResult;
+import org.cameronmoreau.aryelp.services.PlacesApi;
+
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by Cameron on 10/1/16.
@@ -62,6 +73,31 @@ public class ARActivity extends AppCompatActivity implements OnClickBeyondarObje
         for(BeyondarObject item : arItems) {
             world.addBeyondarObject(item);
         }
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://maps.googleapis.com/maps/api/place/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PlacesApi api = PlacesApi.retrofit.create(PlacesApi.class);
+        Call<PlacesResult> call = api.getNearbyPlaces();
+        call.enqueue(new Callback<PlacesResult>() {
+            @Override
+            public void onResponse(Call<PlacesResult> call, Response<PlacesResult> response) {
+                Log.d("TEST", "Worked!");
+
+                List<Place> places = response.body().getResults();
+                for(Place p : places) {
+                    Log.d("TEST", p.toString());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PlacesResult> call, Throwable t) {
+                Log.e("TEST", "Failed!");
+                Log.e("TEST", t.getMessage());
+            }
+        });
     }
 
     void addFakeItems() {
